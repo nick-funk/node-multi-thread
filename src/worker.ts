@@ -1,3 +1,4 @@
+import path from "path";
 import { Worker } from "worker_threads"
 
 export enum ThreadedMessageType {
@@ -32,8 +33,17 @@ const startThread = async (script: string, data?: any): Promise<ThreadedMessage>
   });
 }
 
+export const getScriptByName = (name: string): string => {
+  const workingDir = process.cwd()
+  const script = path.join(__dirname, "threaded", `${name}.js`);
+  const relativePath = `./${path.relative(workingDir, script)}`;
+
+  return relativePath;
+}
+
 export const threadedHello = async () => {
-  const result = await startThread("./dist/threaded/hello.js");
+  const script = getScriptByName("hello");
+  const result = await startThread(script);
   if (result.type === ThreadedMessageType.Error) {
     throw result.error;
   }
@@ -43,7 +53,8 @@ export const threadedHello = async () => {
 }
 
 export const threadedPrimes = async (n: number) => {
-  const result = await startThread("./dist/threaded/primes.js", { n });
+  const script = getScriptByName("primes");
+  const result = await startThread(script, { n });
   if (result.type === ThreadedMessageType.Error) {
     throw result.error;
   }
